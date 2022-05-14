@@ -14,9 +14,6 @@ import nf_utils as nf
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Running on device: {device}')
 
-def my_transform_f(x):
-    return torch.exp(log_scale) * x + shift
-
 def calculate_jacobian(y, x, retain_graph=False):
     x_grads = []
     for xi, yi in enumerate(y.flatten()):
@@ -28,19 +25,35 @@ def calculate_jacobian(y, x, retain_graph=False):
         x_grads.append(x.grad.clone()) # this one should be flattening the clone and sum it up.
     return torch.stack(x_grads).reshape(*y.shape, *x.shape)
 
-data_wrapper = nf.CircleGaussiansDataset(n_gaussians=1,n_samples=100,radius=3.0,variance=0.3, seed=45)
+#def inversed_affine_transform_jacobian_elementwise()
+
+#def inversed_affine_transform_jacobian(inversed_affine,variable):
+    
+def affine_transform(x):
+    return torch.exp(log_scale) * x + shift
+
+def inversed_affine_transform(yi):
+    yi_bi_diff = (yi-shift)
+    inversed_exp_a = 1/torch.exp(log_scale)
+    return yi_bi_diff*inversed_exp_a
+
+data_wrapper = nf.CircleGaussiansDataset(n_gaussians=1,n_samples=3,radius=3.0,variance=0.3, seed=45)
 x_data = torch.tensor(data_wrapper.X,requires_grad=True)
 
 log_scale = nn.Parameter(torch.zeros(2))
 shift = nn.Parameter(torch.zeros(2))
-log_scale.requires_grad = True
-shift.requires_grad = True
+#log_scale.requires_grad = True
+#shift.requires_grad = True
 
 # Sample z_0 ~ p_0(z_0)
 mu,sigma = torch.mean(x_data,axis=0),torch.std(x_data,axis=0)
-transform_a = my_transform_f(x_data)
-inversed_transform_a = torch.inverse(transform_a)
-jacobian_inversed_transform_a = calculate_jacobian(inversed_transform_a)
+
+transform_a = affine_transform(x_data)
+
+inversed_transform_a = inversed_affine_transform(transform_a)
+#torch_inversed_transform_a = torch.inverse(transform_a)
+
+#jacobian_inversed_transform_a = calculate_jacobian(inversed_transform_a,transform_a)
 
 # np.random.normal(mu, sigma, 1000)
 
