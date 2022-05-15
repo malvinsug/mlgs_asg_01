@@ -54,19 +54,22 @@ class Radial(nf.Flow):
         beta = - alpha + softplus(self.pre_beta)
 
         def h(h_x):
-            return 1 / (alpha + (torch.norm(h_x - self.x0)))
+            return 1 / (alpha + (torch.linalg.norm(h_x - self.x0)))
 
         def h_der(h_der_x):
-            return h_der_x / torch.norm(h_der_x - self.x0)
+            denom = torch.pow(h(h_der_x), 2)
+            numer = (h_der_x - self.x0) / torch.linalg.norm(h_der_x - self.x0)
+            return numer / denom
 
         def radial(radial_x: Tensor) -> Tensor:
             h_result = h(radial_x)
-            return radial_x +  beta *  h_result * (radial_x-self.x0)
+            return radial_x + beta * h_result * (radial_x - self.x0)
 
         def determinant(det_x):
-           e_1 = torch.pow(1 + beta * h(det_x), self.dim - 1)
-           e_2 = 1 + beta * h(det_x) + beta * h_der(det_x) * torch.norm(x - self.x0)
-           return torch.log(torch.abs(torch.prod(e_1 * e_2)))
+            e_1 = torch.pow(1 + beta * h(det_x), self.dim - 1)
+            e_2 = 1 + beta * h(det_x) + beta * h_der(det_x) * torch.linalg.norm(
+                x - self.x0)
+            return torch.log(torch.abs(torch.prod(e_1 * e_2)))
 
         y = None
         log_det_jac = []

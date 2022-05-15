@@ -27,7 +27,7 @@ def train(model, dataset, batch_size=100, max_epochs=1000, frequency=250):
 
     # Train model
     losses = []
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, weight_decay=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
     for epoch in range(max_epochs + 1):
         total_loss = 0
         for batch_index, (X_train) in enumerate(train_loader):
