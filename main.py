@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import nf_utils as nf
 from affine import Affine
 from device import device
+from radial import Radial
 from stacked_flows import StackedFlows
 from train import train
 

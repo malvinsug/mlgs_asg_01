@@ -43,8 +43,9 @@ def train(model, dataset, batch_size=100, max_epochs=1000, frequency=250):
         total_loss /= len(train_loader)
         losses.append(total_loss)
 
+        print(f"Epoch {epoch} -> loss: {total_loss:.2f}")
         if epoch % frequency == 0:
-            print(f"Epoch {epoch} -> loss: {total_loss:.2f}")
+            #print(f"Epoch {epoch} -> loss: {total_loss:.2f}")
             nf.plot_density(model, train_loader, device=device)
 
     return model, losses

@@ -58,7 +58,7 @@ class StackedFlows(nn.Module):
 
         ##########################################################
         jac_acc = None
-        for transform in self.transforms:
+        for transform in self.transforms[::-1]:
             x, jac = transform.inverse(x)
             jac_acc = jac if jac_acc is None else jac_acc + jac
 
@@ -81,9 +81,8 @@ class StackedFlows(nn.Module):
         x = self.base_dist.rsample(torch.Size([batch_size]))
         log_prob = self.base_dist.log_prob(x)
         for transform in self.transforms:
-            x, _ = transform.inverse(x)
-
-
+            x, jac = transform(x)
+            log_prob -= jac
         ##########################################################
 
         assert x.shape == (batch_size, self.dim)

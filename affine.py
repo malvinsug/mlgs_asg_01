@@ -38,13 +38,11 @@ class Affine(nf.Flow):
         B, D = x.shape
 
         ##########################################################
-
         y = torch.exp(self.log_scale) * x + self.shift
 
         jac = torch.exp(self.log_scale)
-        log_jac = torch.log(torch.abs(torch.prod(jac)))
-        log_det_jac = torch.full((B,), log_jac.item())
-
+        log_det_jac = torch.log(torch.abs(torch.prod(jac)))
+        log_det_jac = torch.full((B,), log_det_jac.item())
         ##########################################################
 
         assert y.shape == (B, D)
@@ -68,9 +66,8 @@ class Affine(nf.Flow):
         x = (y - self.shift) / torch.exp(self.log_scale)
 
         jac = torch.exp(self.log_scale)
-        log_jac = torch.log(1/torch.abs(torch.prod(jac)))
-        inv_log_det_jac = torch.full((B,), log_jac.item())
-
+        inv_log_det = torch.log(torch.abs(1/torch.prod(jac)))
+        inv_log_det_jac = torch.full((B,), inv_log_det.item())
         ##########################################################
 
         assert x.shape == (B, D)

@@ -49,9 +49,37 @@ class Radial(nf.Flow):
         B, D = x.shape
 
         ##########################################################
-        # YOUR CODE HERE
+        softplus = torch.nn.Softplus()
+        alpha = softplus(self.pre_alpha)
+        beta = - alpha + softplus(self.pre_beta)
 
-        ##########################################################
+        def h(h_x):
+            return 1 / (alpha + (torch.norm(h_x - self.x0)))
+
+        def h_der(h_der_x):
+            return h_der_x / torch.norm(h_der_x - self.x0)
+
+        def radial(radial_x: Tensor) -> Tensor:
+            h_result = h(radial_x)
+            return radial_x +  beta *  h_result * (radial_x-self.x0)
+
+        def determinant(det_x):
+           e_1 = torch.pow(1 + beta * h(det_x), self.dim - 1)
+           e_2 = 1 + beta * h(det_x) + beta * h_der(det_x) * torch.norm(x - self.x0)
+           return torch.log(torch.abs(torch.prod(e_1 * e_2)))
+
+        y = None
+        log_det_jac = []
+        for sample in range(B):
+            current_sample = x[sample]
+            radial_x = radial(current_sample)
+            radial_x = radial_x[:, None]
+            y = radial_x if y is None else torch.cat((y, radial_x), 1)
+            det = determinant(current_sample)
+            log_det_jac = [*log_det_jac, det.item()]
+        log_det_jac = Tensor(log_det_jac)
+        y = y.t()
+        #########################################################
 
         assert y.shape == (B, D)
         assert log_det_jac.shape == (B,)
