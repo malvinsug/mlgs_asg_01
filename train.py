@@ -32,8 +32,8 @@ def train(model, dataset, batch_size=100, max_epochs=1000, frequency=250):
         total_loss = 0
         for batch_index, (X_train) in enumerate(train_loader):
             ##########################################################
-            batch_size = X_train[0]
-            loss = - torch.sum(torch.sum(model.log_prob(X_train))/batch_size)
+            log_prob = torch.sum(model.log_prob(X_train))
+            loss = - log_prob/batch_size
             ##########################################################
 
             optimizer.zero_grad()

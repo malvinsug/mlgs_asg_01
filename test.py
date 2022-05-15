@@ -30,7 +30,6 @@ def test_stack_rsample():
     stacked.rsample(10)
 
 def test_train():
-    print()
     transform = [Affine(), Affine()]
     model = StackedFlows(transform)
     train(model, dataset_1)

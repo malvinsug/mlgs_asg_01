@@ -42,7 +42,7 @@ class Affine(nf.Flow):
         y = torch.exp(self.log_scale) * x + self.shift
 
         jac = torch.exp(self.log_scale)
-        log_jac = torch.log(jac[0] * jac[1])
+        log_jac = torch.log(torch.abs(torch.prod(jac)))
         log_det_jac = torch.full((B,), log_jac.item())
 
         ##########################################################
@@ -67,8 +67,8 @@ class Affine(nf.Flow):
         ##########################################################
         x = (y - self.shift) / torch.exp(self.log_scale)
 
-        jac = 1/torch.exp(self.log_scale)
-        log_jac = torch.log(jac[0] * jac[1])
+        jac = torch.exp(self.log_scale)
+        log_jac = torch.log(1/torch.abs(torch.prod(jac)))
         inv_log_det_jac = torch.full((B,), log_jac.item())
 
         ##########################################################

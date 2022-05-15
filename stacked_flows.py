@@ -2,13 +2,11 @@ from typing import Tuple, List
 
 import torch
 import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, Size
 from torch.distributions.multivariate_normal import MultivariateNormal
 
 import nf_utils as nf
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(f'Running on device: {device}')
+from device import device
 
 
 class StackedFlows(nn.Module):
@@ -59,15 +57,14 @@ class StackedFlows(nn.Module):
         B, D = x.shape
 
         ##########################################################
-
-        jacs = []
+        jac_acc = None
         for transform in self.transforms:
             x, jac = transform.inverse(x)
-            jacs.append(jac)
-        jacs_sum = sum(jacs)
+            jac_acc = jac if jac_acc is None else jac_acc + jac
 
+        log_prob = self.base_dist.log_prob(x) + jac_acc
         ##########################################################
-        log_prob = self.base_dist.log_prob(x) + jacs_sum
+
 
         assert log_prob.shape == (B,)
 
@@ -81,11 +78,12 @@ class StackedFlows(nn.Module):
             log_prob: Log probability of x, shape [batch_size]
         """
         ##########################################################
-        x = self.base_dist.rsample(batch_size)
-        for transform in self.transforms:
-            x, _ = transform.forward(x)
-
+        x = self.base_dist.rsample(torch.Size([batch_size]))
         log_prob = self.base_dist.log_prob(x)
+        for transform in self.transforms:
+            x, _ = transform.inverse(x)
+
+
         ##########################################################
 
         assert x.shape == (batch_size, self.dim)
