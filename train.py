@@ -27,13 +27,15 @@ def train(model, dataset, batch_size=100, max_epochs=1000, frequency=250):
 
     # Train model
     losses = []
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, weight_decay=1e-4)
     for epoch in range(max_epochs + 1):
         total_loss = 0
         for batch_index, (X_train) in enumerate(train_loader):
             ##########################################################
-            log_prob = torch.sum(model.log_prob(X_train))
-            loss = - log_prob/batch_size
+            log_prob = model.log_prob(X_train)
+            #prob = torch.exp(log_prob)
+            #loss_prob = torch.sum(prob).item()/batch_size
+            loss = - torch.sum(log_prob)/batch_size
             ##########################################################
 
             optimizer.zero_grad()
@@ -43,9 +45,8 @@ def train(model, dataset, batch_size=100, max_epochs=1000, frequency=250):
         total_loss /= len(train_loader)
         losses.append(total_loss)
 
-        print(f"Epoch {epoch} -> loss: {total_loss:.2f}")
         if epoch % frequency == 0:
-            #print(f"Epoch {epoch} -> loss: {total_loss:.2f}")
+            print(f"Epoch {epoch} -> loss: {total_loss:.2f}")
             nf.plot_density(model, train_loader, device=device)
 
     return model, losses

@@ -11,24 +11,10 @@ from train import train
 dataset_1 = nf.CircleGaussiansDataset(n_gaussians=1, n_samples=500)
 
 def train_1():
-    transforms = [Affine().get_inverse()]
+    transforms = [Affine()]
     model = StackedFlows(transforms, base_dist='Normal').to(device)
-    model, losses = train(model, dataset_1, max_epochs=501)
+    model, losses = train(model, dataset_1, 100, max_epochs=201, frequency=10)
 
-    k = model.transforms[0]
-    # Plots
-    plt.plot(losses)
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.show()
-    nf.plot_density(model, [], device=device)
-
-def train__():
-    transforms = [Radial().get_inverse()]
-    model = StackedFlows(transforms, base_dist='Normal').to(device)
-    model, losses = train(model, dataset_1, max_epochs=501)
-
-    k = model.transforms[0]
     # Plots
     plt.plot(losses)
     plt.xlabel('Epoch')
@@ -40,7 +26,7 @@ def train__():
 def train_2():
     transforms = [Radial().get_inverse().to(device) for _ in range(4)]
     model = StackedFlows(transforms, base_dist='Normal').to(device)
-    model, losses = train(model, dataset_1, max_epochs=501)
+    model, losses = train(model, dataset_1, max_epochs=501, frequency=10)
 
     # Plots
     plt.plot(losses)
@@ -49,5 +35,6 @@ def train_2():
     plt.show()
     nf.plot_density(model, [], device=device)
 
-train__()
+#train_1()
+train_2()
 

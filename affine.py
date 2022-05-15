@@ -43,6 +43,7 @@ class Affine(nf.Flow):
         jac = torch.exp(self.log_scale)
         log_det_jac = torch.log(torch.abs(torch.prod(jac)))
         log_det_jac = torch.full((B,), log_det_jac.item())
+
         ##########################################################
 
         assert y.shape == (B, D)
@@ -61,12 +62,11 @@ class Affine(nf.Flow):
             inv_log_det_jac: log determinant of the jacobian of the inverse tranformation, shape [batch_size]
         """
         B, D = y.shape
-
         ##########################################################
-        x = (y - self.shift) / torch.exp(self.log_scale)
+        log_scale = torch.exp(self.log_scale)
+        x = (y - self.shift) / log_scale
 
-        jac = torch.exp(self.log_scale)
-        inv_log_det = torch.log(torch.abs(1/torch.prod(jac)))
+        inv_log_det = torch.log(torch.abs(1/torch.prod(log_scale)))
         inv_log_det_jac = torch.full((B,), inv_log_det.item())
         ##########################################################
 
