@@ -1,8 +1,2 @@
-# mlgs_asg_01
-# mlgs_asg_01
-# mlgs_asg_01
-# mlgs_asg_01
-# mlgs_asg_01
-# mlgs_asg_01
-# mlgs_01
-# mlgs_asg_01
+# MLGS Assignments
+This repository contains all the assignments from MLGS class.
