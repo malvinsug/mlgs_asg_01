@@ -11,15 +11,13 @@ from torch.distributions.multivariate_normal import MultivariateNormal
 
 import nf_utils as nf
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(f'Running on device: {device}')
-
 class Affine(nf.Flow):
     """Affine transformation y = e^a * x + b.
-    
+
     Args:
         dim (int): dimension of input/output data. int
     """
+
     def __init__(self, dim: int = 2):
         """ Create and init an affine transformation. """
         super().__init__()
@@ -38,35 +36,15 @@ class Affine(nf.Flow):
             log_det_jac: log determinant of the jacobian of the forward tranformation, shape [batch_size]
         """
         B, D = x.shape
-        
-        ##########################################################
-        # YOUR CODE HERE
-        def affine_transform(data_x):
-            return torch.exp(self.log_scale) * data_x + self.shift
-        
-        def compute_affine_jacobian(f):
-            dim = f.shape[1]
-            identity_matrix = torch.eye(dim)
-            exp_log_scale = torch.exp(log_scale)
-            return torch.multiply(identity_matrix,exp_log_scale)
-
-        def calculate_determinant(affine_jacobian):
-            row_size,column_size = affine_jacobian.shape[0],affine_jacobian.shape[1]
-            assert  row_size == column_size
-            determinant = 1
-            for i in range(row_size):
-                determinant *= affine_jacobian[i][i]
-            return determinant
-        
-        for i in range(B):
-            f_z = affine_transform(x[i].T)
-            jacobian_f_z = compute_affine_jacobian(f_z)
-            determinant_f_z = calculate_determinant(jacobian_f_z)
-            log_det_jac = torch.log(determinant_f_z)
-
 
         ##########################################################
-        
+        y = torch.exp(self.log_scale) * x + self.shift
+
+        jac = torch.exp(self.log_scale)
+        log_det_jac = torch.log(torch.abs(torch.prod(jac)))
+        log_det_jac = torch.full((B,), log_det_jac.item())
+        ##########################################################
+
         assert y.shape == (B, D)
         assert log_det_jac.shape == (B,)
 
@@ -85,8 +63,11 @@ class Affine(nf.Flow):
         B, D = y.shape
 
         ##########################################################
-        # YOUR CODE HERE
+        x = (y - self.shift) / torch.exp(self.log_scale)
 
+        jac = torch.exp(self.log_scale)
+        inv_log_det = torch.log(torch.abs(1/torch.prod(jac)))
+        inv_log_det_jac = torch.full((B,), inv_log_det.item())
         ##########################################################
 
         assert x.shape == (B, D)
