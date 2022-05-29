@@ -3,7 +3,7 @@
 import torch
 from torch.optim import Adam
 from matplotlib import pyplot as plt
-from utils import get_mnist_data, get_device
+from utils import get_mnist_data, get_device,save_variable,load_variable
 from models import ConvNN
 from training_and_evaluation import train_model, predict_model
 from attacks import gradient_attack
@@ -54,7 +54,15 @@ def loss_function(x: torch.Tensor, y: torch.Tensor, model: torch.nn.Module,
     """
     ##########################################################
     # YOUR CODE HERE
-    ...
+    logits_pert = model.forward(x)
+
+    #get_softmax = torch.nn.Softmax(dim=1) # acts like axis dim = 1 along the row
+    #logits_pert_softmax =  get_softmax(logits_pert.detach())
+    #y_hat = torch.argmax(logits_pert,dim=1)
+    #hamming_distance = torch.not_equal(y,y_hat).type(torch.int64)
+
+    criterion = torch.nn.CrossEntropyLoss()
+    loss_pert = criterion(logits_pert,y)
     ##########################################################
     # Important: don't forget to call model.zero_grad() after creating the 
     #            adversarial examples.
