@@ -55,7 +55,7 @@ def loss_function(x: torch.Tensor, y: torch.Tensor, model: torch.nn.Module,
     ##########################################################
     # YOUR CODE HERE
     B,C,N,_ = x.shape
-    def get_x_grad(x,y,model):
+    def _get_x_grad(x,y,model):
         x.requires_grad = True
         logits_original = model.forward(x)
         loss_original = cross_entropy(logits_original,y)
@@ -64,7 +64,7 @@ def loss_function(x: torch.Tensor, y: torch.Tensor, model: torch.nn.Module,
         return x.grad.data
 
     # FGSM Attack
-    x_grad = get_x_grad(x,y,model)
+    x_grad = _get_x_grad(x,y,model)
     epsilon = attack_args["epsilon"]
     norm = int(attack_args["norm"])
     normed_x_grad = torch.norm(epsilon*x_grad.sign(),p=norm,dim=1)
