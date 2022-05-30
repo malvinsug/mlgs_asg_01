@@ -54,15 +54,29 @@ def loss_function(x: torch.Tensor, y: torch.Tensor, model: torch.nn.Module,
     """
     ##########################################################
     # YOUR CODE HERE
-    logits_pert = model.forward(x)
+    B,C,N,_ = x.shape
+    def get_x_grad(x,y,model):
+        x.requires_grad = True
+        logits_original = model.forward(x)
+        loss_original = cross_entropy(logits_original,y)
+        model.zero_grad()
+        loss_original.backward()
+        return x.grad.data
 
-    #get_softmax = torch.nn.Softmax(dim=1) # acts like axis dim = 1 along the row
-    #logits_pert_softmax =  get_softmax(logits_pert.detach())
-    #y_hat = torch.argmax(logits_pert,dim=1)
-    #hamming_distance = torch.not_equal(y,y_hat).type(torch.int64)
+    # FGSM Attack
+    x_grad = get_x_grad(x,y,model)
+    epsilon = attack_args["epsilon"]
+    norm = int(attack_args["norm"])
+    normed_x_grad = torch.norm(epsilon*x_grad.sign(),p=norm,dim=1)
+    perturbed_x = x + torch.reshape(normed_x_grad,(B,C,N,N))
+    
+    # Since we are using MNIST dataset,where range(0,1), we need to ensure that it stays inside the range.
+    perturbed_x = torch.clamp(perturbed_x, 0, 1)
 
-    criterion = torch.nn.CrossEntropyLoss()
-    loss_pert = criterion(logits_pert,y)
+    # Forward pertubed image
+    logits_pert = model.forward(perturbed_x)
+    loss_pert = cross_entropy(logits_pert,y).mean()
+
     ##########################################################
     # Important: don't forget to call model.zero_grad() after creating the 
     #            adversarial examples.
