@@ -40,7 +40,14 @@ def gradient_attack(logits: torch.Tensor, x: torch.Tensor, y: torch.Tensor,
 
     ##########################################################
     # YOUR CODE HERE
-    ...
+    B,C,N,_ = x.shape
+    x.requires_grad = True
+    loss_original = loss_fn(logits,y)
+    loss_original.backward()
+    x_grad = x.grad.data
+
+    normed_x_grad = torch.norm(epsilon*x_grad,p=int(norm),dim=1)
+    x_pert = x + torch.reshape(normed_x_grad,(B,C,N,N))
     ##########################################################
 
     return x_pert.detach()

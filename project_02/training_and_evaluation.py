@@ -52,7 +52,25 @@ def train_model(model: nn.Module, dataset: Dataset, batch_size: int,
         for x,y in tqdm(train_loader, total=num_train_batches):
             ##########################################################
             # YOUR CODE HERE
-            ...
+            loss_pert, logits_pert = loss_function(x,y,model,**loss_args)
+            
+            # Calculate Accurracy
+            y_hat = torch.argmax(logits_pert,dim=1)
+            hamming_distance = torch.eq(y,y_hat).type(torch.int64)
+            correct_classification = torch.sum(hamming_distance).detach().numpy()
+            accuracy_pert = correct_classification/y.shape[0]
+            
+            #print(f"loss_pert: {loss_pert:>7f}")
+            #print(f"accuracy_pert: {accuracy_pert:>7f}  [{correct_classification:>5d}/{y.shape[0]:>5d}] \n")
+
+            losses.append(loss_pert)
+            accuracies.append(accuracy_pert)
+
+            # Backpropagation
+            optimizer.zero_grad()
+            loss_pert.backward()
+            optimizer.step()
+            
             ##########################################################
     return losses, accuracies
 
@@ -97,7 +115,11 @@ def predict_model(model: nn.Module, dataset: Dataset, batch_size: int,
     for x, y in tqdm(test_loader, total=num_batches):
         ##########################################################
         # YOUR CODE HERE
-        ...
+        logits_x = model.forward(x)
+        prediction = torch.argmax(logits_x,dim=1)
+        predictions.append(prediction)
+        target = y
+        targets.append(target)
         ##########################################################
     predictions = torch.cat(predictions)
     targets = torch.cat(targets)

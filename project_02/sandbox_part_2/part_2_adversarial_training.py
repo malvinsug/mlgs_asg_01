@@ -54,6 +54,7 @@ def loss_function(x: torch.Tensor, y: torch.Tensor, model: torch.nn.Module,
     """
     ##########################################################
     # YOUR CODE HERE
+
     B,C,N,_ = x.shape
     def _get_x_grad(x,y,model):
         x.requires_grad = True
